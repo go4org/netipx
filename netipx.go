@@ -15,7 +15,7 @@
 //
 // IP and IPPort are the only types in this package that support IPv6
 // zones. Other types silently drop any passed-in zones.
-package netaddr // import "inet.af/netaddr"
+package netipx // import "go4.org/netipx"
 
 import (
 	"encoding/binary"

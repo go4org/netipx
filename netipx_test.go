@@ -4,7 +4,7 @@
 
 //lint:file-ignore U1000 allow unused code in tests for experiments.
 
-package netaddr
+package netipx
 
 import (
 	"bytes"

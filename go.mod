@@ -1,6 +1,6 @@
-module inet.af/netaddr
+module go4.org/netipx
 
-go 1.12
+go 1.18
 
 require (
 	github.com/dvyukov/go-fuzz v0.0.0-20210103155950-6a8e9d1f2415

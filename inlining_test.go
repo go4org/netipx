@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package netaddr
+package netipx
 
 import (
 	"os/exec"
@@ -32,7 +32,7 @@ func TestInlining(t *testing.T) {
 		filepath.Join(runtime.GOROOT(), "bin", "go"+exe),
 		"build",
 		"--gcflags=-m",
-		"inet.af/netaddr").CombinedOutput()
+		"go4.org/netipx").CombinedOutput()
 	if err != nil {
 		t.Fatalf("go build: %v, %s", err, out)
 	}
