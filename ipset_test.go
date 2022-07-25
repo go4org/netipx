@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net/netip"
 	"reflect"
 	"testing"
 )
@@ -629,16 +630,16 @@ func TestIPSetRanges(t *testing.T) {
 			if uint16(pat)&(1<<b) != 0 {
 				ip := IPv4(1, 0, 0, uint8(b))
 				to = ip
-				if from.IsZero() {
+				if !from.IsValid() {
 					from = ip
 				}
 				continue
 			}
-			if !from.IsZero() {
+			if from.IsValid() {
 				flush()
 			}
 		}
-		if !from.IsZero() {
+		if from.IsValid() {
 			flush()
 		}
 		got := buildIPSet(&build).Ranges()
@@ -716,6 +717,8 @@ func TestIPSetRangesStress(t *testing.T) {
 func TestIPSetEqual(t *testing.T) {
 	a := new(IPSetBuilder)
 	b := new(IPSetBuilder)
+	MustParseIP := netip.MustParseAddr
+	MustParseIPPrefix := netip.MustParsePrefix
 
 	assertEqual := func(want bool) {
 		t.Helper()
