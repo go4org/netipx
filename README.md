@@ -1,41 +1,26 @@
-# netaddr [![Test Status](https://github.com/inetaf/netaddr/workflows/Linux/badge.svg)](https://github.com/inetaf/netaddr/actions) [![Go Reference](https://pkg.go.dev/badge/inet.af/netaddr.svg)](https://pkg.go.dev/inet.af/netaddr)
+# netipx [![Test Status](https://github.com/go4org/netipx/workflows/Linux/badge.svg)](https://github.com/go4org/netipx/actions) [![Go Reference](https://pkg.go.dev/badge/go4.org/netipx.svg)](https://pkg.go.dev/go4.org/netipx)
 
 ## What
 
-This is a package containing a new IP address type for Go.
+This is a package containing the bits of the old `inet.af/netaddr` package that didn't make it
+into Go 1.18's `net/netip` standard library package.
 
-See its docs: https://pkg.go.dev/inet.af/netaddr
+As background, see:
 
-## Status
+* https://github.com/inetaf/netaddr/ (now deprecated)
+* https://tailscale.com/blog/netaddr-new-ip-type-for-go/ - blog post about why the package came to be originally
+* https://go.dev/doc/go1.18#netip - Go 1.18 release notes
 
-This package is mature, optimized, and used heavily in production at [Tailscale](https://tailscale.com).
-However, API stability is not yet guaranteed.
+This package requires Go 1.18+ to use and complements the `net/netip`.
 
-netaddr is intended to be a core, low-level package.
-We take code review, testing, dependencies, and performance seriously, similar to Go's standard library or the golang.org/x repos.
+## FAQ
 
-## Motivation
+**Why's it no longer under `inet.af`?** Since that joke started, that
+TLD is now under control of the Taliban. (Yes, we should've known
+better.  We'd even previously scolded people for relying on
+questionable ccTLDs. Whoops.)
 
-See https://tailscale.com/blog/netaddr-new-ip-type-for-go/ for a long
-blog post about why we made a new IP address package.
+**Will this stuff make it into the standard library?** [Maybe](https://github.com/golang/go/issues/53236).
+We'll see.
 
-Other links:
 
-* https://github.com/golang/go/issues/18804 ("net: reconsider representation of IP")
-* https://github.com/golang/go/issues/18757 ("net: ParseIP should return an error, like other Parse functions")
-* https://github.com/golang/go/issues/37921 ("net: Unable to reliably distinguish IPv4-mapped-IPv6 addresses from regular IPv4 addresses")
-* merges net.IPAddr and net.IP (which the Go net package is a little torn between for legacy reasons)
-
-## Testing
-
-In addition to regular Go tests, netaddr uses fuzzing.
-The corpus is stored separately, in a submodule,
-to minimize the impact on everyone else.
-
-To use:
-
-```
-$ git submodule update --init
-$ go get -u github.com/dvyukov/go-fuzz/go-fuzz github.com/dvyukov/go-fuzz/go-fuzz-build
-$ go-fuzz-build && go-fuzz
-```
