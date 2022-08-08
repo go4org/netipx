@@ -14,8 +14,6 @@ import (
 	"net/netip"
 	"reflect"
 	"testing"
-
-	"go4.org/intern"
 )
 
 type (
@@ -729,7 +727,6 @@ var (
 	sinkIPPrefix      IPPrefix
 	sinkIPPrefixSlice []IPPrefix
 	sinkIPRange       IPRange
-	sinkInternValue   *intern.Value
 	sinkIP16          [16]byte
 	sinkIP4           [4]byte
 	sinkBool          bool
