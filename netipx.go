@@ -29,10 +29,7 @@ import (
 // FromStdIPRaw.
 func FromStdIP(std net.IP) (ip netip.Addr, ok bool) {
 	ret, ok := FromStdIPRaw(std)
-	if ret.Is4In6() {
-		ret = ret.Unmap()
-	}
-	return ret, ok
+	return ret.Unmap(), ok
 }
 
 // FromStdIPRaw returns an IP from the standard library's IP type.
