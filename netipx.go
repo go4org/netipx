@@ -51,6 +51,8 @@ func FromStdIPRaw(std net.IP) (ip netip.Addr, ok bool) {
 
 // IPNext returns the IP following ip.
 // If there is none, it returns the IP zero value.
+//
+// Deprecated: use netip.Addr.Next instead.
 func AddrNext(ip netip.Addr) netip.Addr {
 	addr := u128From16(ip.As16()).addOne()
 	if ip.Is4() {
@@ -70,6 +72,8 @@ func AddrNext(ip netip.Addr) netip.Addr {
 
 // AddrPrior returns the IP before ip.
 // If there is none, it returns the IP zero value.
+//
+// Deprecated: use netip.Addr.Prev instead.
 func AddrPrior(ip netip.Addr) netip.Addr {
 	addr := u128From16(ip.As16())
 	if ip.Is4() {
