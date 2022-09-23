@@ -26,9 +26,9 @@ import (
 // returned, without the IPv6 wrapper. This is the common form returned by
 // the standard library's ParseIP: https://play.golang.org/p/qdjylUkKWxl.
 // To convert a standard library IP without the implicit unmapping, use
-// FromStdIPRaw.
+// netip.AddrFromSlice.
 func FromStdIP(std net.IP) (ip netip.Addr, ok bool) {
-	ret, ok := FromStdIPRaw(std)
+	ret, ok := netip.AddrFromSlice(std)
 	return ret.Unmap(), ok
 }
 
@@ -36,14 +36,10 @@ func FromStdIP(std net.IP) (ip netip.Addr, ok bool) {
 // If std is invalid, ok is false.
 // Unlike FromStdIP, FromStdIPRaw does not do an implicit Unmap if
 // len(std) == 16 and contains an IPv6-mapped IPv4 address.
+//
+// Deprecated: use netip.AddrFromSlice instead.
 func FromStdIPRaw(std net.IP) (ip netip.Addr, ok bool) {
-	switch len(std) {
-	case 4:
-		return netip.AddrFrom4(*(*[4]byte)(std)), true
-	case 16:
-		return netip.AddrFrom16(*(*[16]byte)(std)), true
-	}
-	return netip.Addr{}, false
+	return netip.AddrFromSlice(std)
 }
 
 // IPNext returns the IP following ip.
