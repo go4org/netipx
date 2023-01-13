@@ -181,6 +181,47 @@ func TestIPPrefixIsSingleIP(t *testing.T) {
 	}
 }
 
+func TestAddrIPNet(t *testing.T) {
+	tests := []struct {
+		name string
+		addr netip.Addr
+		want *net.IPNet
+	}{
+		{
+			name: "invalid IP",
+			addr: netip.Addr{},
+			want: &net.IPNet{},
+		},
+		{
+			name: "IPv4",
+			addr: mustIP("127.0.0.1"),
+			want: &net.IPNet{
+				IP:   net.IPv4(127, 0, 0, 1).To4(),
+				Mask: net.IPv4Mask(255, 255, 255, 255),
+			},
+		},
+		{
+			name: "IPv6",
+			addr: mustIP("2001:db8::"),
+			want: &net.IPNet{
+				IP:   net.ParseIP("2001:db8::"),
+				Mask: net.CIDRMask(128, 128),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := AddrIPNet(tt.addr)
+			if got == nil {
+				t.Fatalf("nil result")
+			} else if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("AddrIPNet(%q) = %+v; want %+v", tt.addr, got, tt.want)
+			}
+		})
+	}
+
+}
+
 type appendMarshaler interface {
 	encoding.TextMarshaler
 	AppendTo([]byte) []byte
