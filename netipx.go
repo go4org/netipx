@@ -142,7 +142,21 @@ func PrefixIPNet(p netip.Prefix) *net.IPNet {
 	}
 	return &net.IPNet{
 		IP:   p.Addr().AsSlice(),
-		Mask: net.CIDRMask(int(p.Bits()), int(p.Addr().BitLen())),
+		Mask: net.CIDRMask(p.Bits(), p.Addr().BitLen()),
+	}
+}
+
+// AddrIPNet returns the net.IPNet representation of an netip.Addr
+// with a mask corresponding to the addresses's bit length.
+// The returned value is always non-nil.
+// Any zone identifier is dropped in the conversion.
+func AddrIPNet(addr netip.Addr) *net.IPNet {
+	if !addr.IsValid() {
+		return &net.IPNet{}
+	}
+	return &net.IPNet{
+		IP:   addr.AsSlice(),
+		Mask: net.CIDRMask(addr.BitLen(), addr.BitLen()),
 	}
 }
 
