@@ -768,8 +768,6 @@ func TestNoAllocs(t *testing.T) {
 	// IP constructors
 	test("FromStdIP", func() { sinkIP = panicIPOK(FromStdIP(net.IP([]byte{1, 2, 3, 4}))) })
 	test("FromStdIPRaw", func() { sinkIP = panicIPOK(FromStdIPRaw(net.IP([]byte{1, 2, 3, 4}))) })
-	test("IPv6LinkLocalAllNodes", func() { sinkIP = netip.IPv6LinkLocalAllNodes() })
-	test("IPv6Unspecified", func() { sinkIP = netip.IPv6Unspecified() })
 
 	// IPPort constructors
 	test("FromStdAddr", func() {
