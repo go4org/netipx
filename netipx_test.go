@@ -27,27 +27,6 @@ func IPv4(a, b, c, d uint8) IP {
 	return netip.AddrFrom4([4]byte{a, b, c, d})
 }
 
-// IPv6Raw returns the IPv6 address given by the bytes in addr,
-// without an implicit Unmap call to unmap any v6-mapped IPv4
-// address.
-func IPv6Raw(addr [16]byte) IP {
-	return netip.AddrFrom16(addr)
-}
-
-// IPFrom16 returns the IP address given by the bytes in addr,
-// unmapping any v6-mapped IPv4 address.
-//
-// It is equivalent to calling IPv6Raw(addr).Unmap().
-func IPFrom16(addr [16]byte) IP {
-	return netip.AddrFrom16(addr).Unmap()
-}
-
-// IPFrom4 returns the IPv4 address given by the bytes in addr.
-// It is equivalent to calling IPv4(addr[0], addr[1], addr[2], addr[3]).
-func IPFrom4(addr [4]byte) IP {
-	return IPv4(addr[0], addr[1], addr[2], addr[3])
-}
-
 var long = flag.Bool("long", false, "run long tests")
 
 func TestFromStdIP(t *testing.T) {
@@ -67,7 +46,7 @@ func TestFromStdIP(t *testing.T) {
 			name: "v6",
 			fn:   FromStdIP,
 			std:  net.ParseIP("::1"),
-			want: IPv6Raw([...]byte{15: 1}),
+			want: netip.AddrFrom16([...]byte{15: 1}),
 		},
 		{
 			name: "4in6-unmap",
@@ -85,7 +64,7 @@ func TestFromStdIP(t *testing.T) {
 			name: "4in6-raw",
 			fn:   FromStdIPRaw,
 			std:  net.ParseIP("1.2.3.4"),
-			want: IPv6Raw([...]byte{10: 0xff, 11: 0xff, 12: 1, 13: 2, 14: 3, 15: 4}),
+			want: netip.AddrFrom16([...]byte{10: 0xff, 11: 0xff, 12: 1, 13: 2, 14: 3, 15: 4}),
 		},
 		{
 			name: "bad-raw",
@@ -722,7 +701,7 @@ func TestAddrNextPrior(t *testing.T) {
 
 	for _, ip := range []IP{
 		mustIP("255.255.255.255"),
-		IPv6Raw(allFF),
+		netip.AddrFrom16(allFF),
 	} {
 		got := ip.Next()
 		if got.IsValid() {
