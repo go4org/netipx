@@ -32,6 +32,15 @@ func FromStdIP(std net.IP) (ip netip.Addr, ok bool) {
 	return ret.Unmap(), ok
 }
 
+// MustFromStdIP is like FromStdIP, but it panics if std is invalid.
+func MustFromStdIP(std net.IP) netip.Addr {
+	ret, ok := netip.AddrFromSlice(std)
+	if !ok {
+		panic("not a valid IP address")
+	}
+	return ret.Unmap()
+}
+
 // FromStdIPRaw returns an IP from the standard library's IP type.
 // If std is invalid, ok is false.
 // Unlike FromStdIP, FromStdIPRaw does not do an implicit Unmap if
