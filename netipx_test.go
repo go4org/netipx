@@ -30,6 +30,15 @@ func IPv4(a, b, c, d uint8) IP {
 var long = flag.Bool("long", false, "run long tests")
 
 func TestFromStdIP(t *testing.T) {
+	mustFromStdIPMustPanic := func(std net.IP) (IP, bool) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("expected MustFromStdIP(%#v) to panic", std)
+			}
+		}()
+		return MustFromStdIP(std), true
+	}
+
 	tests := []struct {
 		name string
 		fn   func(net.IP) (IP, bool)
@@ -70,6 +79,11 @@ func TestFromStdIP(t *testing.T) {
 			name: "bad-raw",
 			fn:   FromStdIPRaw,
 			std:  net.IP{0xff},
+		},
+		{
+			name: "bad-must-panic",
+			fn:   mustFromStdIPMustPanic,
+			std:  net.IP{0x00, 0x01, 0x02},
 		},
 	}
 	for _, tt := range tests {
@@ -177,7 +191,6 @@ func TestAddrIPNet(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 type appendMarshaler interface {
