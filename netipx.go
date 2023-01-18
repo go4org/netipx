@@ -96,7 +96,7 @@ func AddrPrior(ip netip.Addr) netip.Addr {
 func FromStdAddr(stdIP net.IP, port int, zone string) (_ netip.AddrPort, ok bool) {
 	ip, ok := FromStdIP(stdIP)
 	if !ok || port < 0 || port > math.MaxUint16 {
-		return
+		return netip.AddrPort{}, false
 	}
 	ip = ip.Unmap()
 	if zone != "" {

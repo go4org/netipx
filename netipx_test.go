@@ -96,6 +96,63 @@ func TestFromStdIP(t *testing.T) {
 	}
 }
 
+func TestFromStdAddr(t *testing.T) {
+	tests := []struct {
+		name   string
+		std    net.IP
+		port   int
+		zone   string
+		want   netip.AddrPort
+		wantOK bool
+	}{
+		{
+			name: "invalid IP",
+			std:  net.IP{0xff},
+		},
+		{
+			name: "invalid port",
+			std:  net.IP{1, 2, 3, 4},
+			port: -1,
+		},
+		{
+			name:   "v4",
+			std:    net.IP{1, 2, 3, 4},
+			port:   8080,
+			want:   netip.AddrPortFrom(netip.AddrFrom4([...]byte{1, 2, 3, 4}), 8080),
+			wantOK: true,
+		},
+		{
+			name: "v4 with zone",
+			std:  net.IP{1, 2, 3, 4},
+			port: 8080,
+			zone: "foobar",
+		},
+		{
+			name:   "v6",
+			std:    net.ParseIP("fc::"),
+			port:   8080,
+			want:   netip.AddrPortFrom(netip.MustParseAddr("fc::"), 8080),
+			wantOK: true,
+		},
+		{
+			name:   "v6 with zone",
+			std:    net.ParseIP("fc::"),
+			port:   8080,
+			zone:   "foobar",
+			want:   netip.AddrPortFrom(netip.MustParseAddr("fc::").WithZone("foobar"), 8080),
+			wantOK: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, ok := FromStdAddr(tt.std, tt.port, tt.zone)
+			if got != tt.want || ok != tt.wantOK {
+				t.Errorf("FromStdAddr(%#v, %d, %q): got (%#v, %v); want (%#v, %t)", tt.std, tt.port, tt.zone, got, ok, tt.want, tt.wantOK)
+			}
+		})
+	}
+}
+
 func TestFromStdIPNet(t *testing.T) {
 	tests := []struct {
 		name string
