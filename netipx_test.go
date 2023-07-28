@@ -871,3 +871,38 @@ func TestNoAllocs(t *testing.T) {
 		sinkIPPrefix = panicPfxOK(a.Prefix())
 	})
 }
+
+func TestCompareAddr(t *testing.T) {
+	tests := []struct {
+		a, b string
+		want int
+	}{
+		{"1.1.1.1", "1.1.1.2", -1},
+		{"1.1.1.2", "1.1.1.1", 1},
+		{"1.1.1.1", "1.1.1.1", 0},
+		{"1.1.1.1", "1::1", -1},
+	}
+	for _, tt := range tests {
+		if got := CompareAddr(netip.MustParseAddr(tt.a), netip.MustParseAddr(tt.b)); got != tt.want {
+			t.Errorf("f(%q, %q) = %v; want %v", tt.a, tt.b, got, tt.want)
+		}
+	}
+}
+
+func TestComparePrefix(t *testing.T) {
+	tests := []struct {
+		a, b string
+		want int
+	}{
+		{"1.1.1.1/10", "1.1.1.2/10", -1},
+		{"1.1.1.2/10", "1.1.1.1/10", 1},
+		{"1.1.1.1/10", "1.1.1.1/10", 0},
+		{"1.1.1.1/9", "1.1.1.1/10", -1},
+		{"1.1.1.1/32", "1::1/128", -1},
+	}
+	for _, tt := range tests {
+		if got := ComparePrefix(netip.MustParsePrefix(tt.a), netip.MustParsePrefix(tt.b)); got != tt.want {
+			t.Errorf("f(%q, %q) = %v; want %v", tt.a, tt.b, got, tt.want)
+		}
+	}
+}
