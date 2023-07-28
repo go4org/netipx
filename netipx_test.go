@@ -872,33 +872,23 @@ func TestNoAllocs(t *testing.T) {
 	})
 }
 
-func TestCompareAddr(t *testing.T) {
-	tests := []struct {
-		a, b string
-		want int
-	}{
-		{"1.1.1.1", "1.1.1.2", -1},
-		{"1.1.1.2", "1.1.1.1", 1},
-		{"1.1.1.1", "1.1.1.1", 0},
-		{"1.1.1.1", "1::1", -1},
-	}
-	for _, tt := range tests {
-		if got := CompareAddr(netip.MustParseAddr(tt.a), netip.MustParseAddr(tt.b)); got != tt.want {
-			t.Errorf("f(%q, %q) = %v; want %v", tt.a, tt.b, got, tt.want)
-		}
-	}
-}
-
 func TestComparePrefix(t *testing.T) {
 	tests := []struct {
 		a, b string
 		want int
 	}{
-		{"1.1.1.1/10", "1.1.1.2/10", -1},
-		{"1.1.1.2/10", "1.1.1.1/10", 1},
-		{"1.1.1.1/10", "1.1.1.1/10", 0},
-		{"1.1.1.1/9", "1.1.1.1/10", -1},
-		{"1.1.1.1/32", "1::1/128", -1},
+		// sort by address family
+		{"1.0.0.0/8", "1::/8", -1},
+		{"1::/8", "1.0.0.0/8", 1},
+
+		// then sort by bitlen
+		{"1.0.0.0/7", "1.0.0.0/8", -1},
+		{"1.0.0.0/8", "1.0.0.0/7", 1},
+		{"1.0.0.0/8", "1.0.0.0/8", 0},
+
+		// then sort by addr
+		{"1.0.0.0/8", "1.0.0.1/8", -1},
+		{"1.0.0.1/8", "1.0.0.0/8", 1},
 	}
 	for _, tt := range tests {
 		if got := ComparePrefix(netip.MustParsePrefix(tt.a), netip.MustParsePrefix(tt.b)); got != tt.want {
