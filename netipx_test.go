@@ -210,6 +210,60 @@ func TestFromStdIPNet(t *testing.T) {
 	}
 }
 
+func TestParsePrefixOrAddr(t *testing.T) {
+	tests := []struct {
+		name    string
+		s       string
+		want    netip.Addr
+		wantErr bool
+	}{
+		{
+			name:    "empty IP",
+			s:       "",
+			wantErr: true,
+		},
+		{
+			name:    "invalid IP",
+			s:       "192.168.",
+			wantErr: true,
+		},
+		{
+			name: "IPv4 address",
+			s:    "127.0.0.1",
+			want: netip.MustParseAddr("127.0.0.1"),
+		},
+		{
+			name: "IPv6 address",
+			s:    "2001:db8::",
+			want: netip.MustParseAddr("2001:db8::"),
+		},
+		{
+			name: "IPv4 prefix",
+			s:    "192.0.2.1/32",
+			want: netip.MustParseAddr("192.0.2.1"),
+		},
+		{
+			name: "IPv6 prefix",
+			s:    "2001:db8::68/96",
+			want: netip.MustParseAddr("2001:db8::68"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParsePrefixOrAddr(tt.s)
+			if err != nil {
+				if tt.wantErr {
+					return
+				}
+				t.Fatal(err)
+			}
+			if got != tt.want {
+				t.Errorf("ParsePrefixOrAddr(%q) = %v; want %v", tt.s, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestAddrIPNet(t *testing.T) {
 	tests := []struct {
 		name string
