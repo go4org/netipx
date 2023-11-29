@@ -304,6 +304,68 @@ func TestAddrIPNet(t *testing.T) {
 	}
 }
 
+func TestPrefixLastIP(t *testing.T) {
+	tests := []struct {
+		name   string
+		prefix netip.Prefix
+		want   netip.Addr
+	}{
+		{
+			name:   "invalid prefix",
+			prefix: netip.Prefix{},
+			want:   netip.Addr{},
+		},
+		{
+			name:   "IPv4 /0",
+			prefix: netip.MustParsePrefix("0.0.0.0/0"),
+			want:   netip.MustParseAddr("255.255.255.255"),
+		},
+		{
+			name:   "IPv4 /10",
+			prefix: netip.MustParsePrefix("100.64.0.0/10"),
+			want:   netip.MustParseAddr("100.127.255.255"),
+		},
+		{
+			name:   "IPv4 /24",
+			prefix: netip.MustParsePrefix("127.0.0.0/24"),
+			want:   netip.MustParseAddr("127.0.0.255"),
+		},
+		{
+			name:   "IPv4 /30",
+			prefix: netip.MustParsePrefix("127.0.0.0/30"),
+			want:   netip.MustParseAddr("127.0.0.3"),
+		},
+		{
+			name:   "IPv4 /32",
+			prefix: netip.MustParsePrefix("127.0.0.0/32"),
+			want:   netip.MustParseAddr("127.0.0.0"),
+		},
+		{
+			name:   "IPv6 /96",
+			prefix: netip.MustParsePrefix("2001:db8::/96"),
+			want:   netip.MustParseAddr("2001:db8::ffff:ffff"),
+		},
+		{
+			name:   "IPv6 /125",
+			prefix: netip.MustParsePrefix("2001:db8::/125"),
+			want:   netip.MustParseAddr("2001:db8::7"),
+		},
+		{
+			name:   "IPv6 /128",
+			prefix: netip.MustParsePrefix("2001:db8::1/128"),
+			want:   netip.MustParseAddr("2001:db8::1"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := PrefixLastIP(tt.prefix)
+			if got != tt.want {
+				t.Errorf("PrefixLastIP(%q) = %v; want %v", tt.prefix, got, tt.want)
+			}
+		})
+	}
+}
+
 type appendMarshaler interface {
 	encoding.TextMarshaler
 	AppendTo([]byte) []byte
