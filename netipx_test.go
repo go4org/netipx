@@ -986,6 +986,16 @@ func TestNoAllocs(t *testing.T) {
 		a := MustParseIPRange("1.2.3.0-1.2.3.255")
 		sinkIPPrefix = panicPfxOK(a.Prefix())
 	})
+
+	// Prefix functions
+	test("PrefixLastIP/v4", func() {
+		pfx := netip.MustParsePrefix("10.0.0.0/8")
+		sinkAddr = PrefixLastIP(pfx)
+	})
+	test("PrefixLastIP/v6", func() {
+		pfx := netip.MustParsePrefix("2001:db8::/48")
+		sinkAddr = PrefixLastIP(pfx)
+	})
 }
 
 func TestComparePrefix(t *testing.T) {
@@ -1010,5 +1020,30 @@ func TestComparePrefix(t *testing.T) {
 		if got := ComparePrefix(netip.MustParsePrefix(tt.a), netip.MustParsePrefix(tt.b)); got != tt.want {
 			t.Errorf("f(%q, %q) = %v; want %v", tt.a, tt.b, got, tt.want)
 		}
+	}
+}
+
+var sinkAddr netip.Addr
+
+func BenchmarkPrefixLastIP(b *testing.B) {
+	benches := []struct {
+		name string
+		pfx  netip.Prefix
+	}{
+		{"IPv4-32", netip.MustParsePrefix("10.1.2.3/32")},
+		{"IPv4-24", netip.MustParsePrefix("10.1.2.0/24")},
+		{"IPv4-8", netip.MustParsePrefix("10.0.0.0/8")},
+		{"IPv4-0", netip.MustParsePrefix("0.0.0.0/0")},
+		{"IPv6-128", netip.MustParsePrefix("2001:db8::1/128")},
+		{"IPv6-48", netip.MustParsePrefix("2001:db8::/48")},
+		{"IPv6-0", netip.MustParsePrefix("::/0")},
+	}
+	for _, bb := range benches {
+		b.Run(bb.name, func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				sinkAddr = PrefixLastIP(bb.pfx)
+			}
+		})
 	}
 }
