@@ -384,12 +384,13 @@ func (s *IPSet) Contains(ip netip.Addr) bool {
 
 // ContainsRange reports whether all IPs in r are in s.
 func (s *IPSet) ContainsRange(r IPRange) bool {
-	for _, x := range s.rr {
-		if r.coveredBy(x) {
-			return true
-		}
+	i := sort.Search(len(s.rr), func(i int) bool {
+		return r.from.Less(s.rr[i].from)
+	})
+	if i == 0 {
+		return false
 	}
-	return false
+	return r.coveredBy(s.rr[i-1])
 }
 
 // ContainsPrefix reports whether all IPs in p are in s.
@@ -399,26 +400,46 @@ func (s *IPSet) ContainsPrefix(p netip.Prefix) bool {
 
 // Overlaps reports whether any IP in b is also in s.
 func (s *IPSet) Overlaps(b *IPSet) bool {
-	// TODO: sorted ranges lets us do this in O(n+m)
-	for _, r := range s.rr {
-		for _, or := range b.rr {
-			if r.Overlaps(or) {
-				return true
-			}
+	var (
+		i, j       int
+		prev, curr IPRange
+	)
+	for i < len(s.rr) && j < len(b.rr) {
+		prev = curr
+		if s.rr[i].from.Less(b.rr[j].from) {
+			curr = s.rr[i]
+			i++
+		} else {
+			curr = b.rr[j]
+			j++
+		}
+		if prev.Overlaps(curr) {
+			return true
 		}
 	}
-	return false
+	// Fetch and check last one from remaining tail
+	prev = curr
+	switch {
+	case i < len(s.rr):
+		curr = s.rr[i]
+	case j < len(b.rr):
+		curr = b.rr[j]
+	}
+	return prev.Overlaps(curr)
 }
 
 // OverlapsRange reports whether any IP in r is also in s.
 func (s *IPSet) OverlapsRange(r IPRange) bool {
-	// TODO: sorted ranges lets us do this more efficiently.
-	for _, x := range s.rr {
-		if x.Overlaps(r) {
-			return true
-		}
+	i := sort.Search(len(s.rr), func(i int) bool {
+		return r.from.Less(s.rr[i].from)
+	})
+	if i == 0 {
+		return s.rr[i].Overlaps(r)
 	}
-	return false
+	if i == len(s.rr) {
+		return s.rr[i-1].Overlaps(r)
+	}
+	return s.rr[i].Overlaps(r) || s.rr[i-1].Overlaps(r)
 }
 
 // OverlapsPrefix reports whether any IP in p is also in s.

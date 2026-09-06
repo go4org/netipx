@@ -541,6 +541,94 @@ func TestIPSetContains(t *testing.T) {
 	}
 }
 
+func TestIPSetContainsRange(t *testing.T) {
+	var build IPSetBuilder
+	build.AddPrefix(mustIPPrefix("10.0.0.0/8"))
+	build.AddPrefix(mustIPPrefix("1.2.3.4/32"))
+	build.AddPrefix(mustIPPrefix("fc00::/7"))
+	s := buildIPSet(&build)
+
+	tests := []struct {
+		r    string
+		want bool
+	}{
+		{"0.0.0.0-0.0.0.0", false},
+		{"0.0.0.0-255.255.255.255", false},
+		{"::-::", false},
+
+		{"1.2.3.3-1.2.3.3", false},
+		{"1.2.3.4-1.2.3.4", true},
+		{"1.2.3.5-1.2.3.5", false},
+
+		{"9.255.255.254-9.255.255.255", false},
+		{"10.0.0.0-10.0.0.0", true},
+		{"10.1.2.3-10.1.2.3", true},
+		{"10.0.0.0-10.255.255.255", true},
+		{"10.1.0.0-10.1.255.255", true},
+		{"10.1.0.0-11.1.255.255", false},
+		{"11.0.0.0-11.0.0.0", false},
+		{"9.0.0.0-11.0.0.0", false},
+
+		{"::-::", false},
+		{"fc00::-fc00::", true},
+		{"fc00::1-fc00::1", true},
+		{"fd00::1-fd00::1", true},
+		{"fc00::1-fd00::1", true},
+		{"ff00::1-ff00::1", false},
+	}
+	for _, tt := range tests {
+		got := s.ContainsRange(MustParseIPRange(tt.r))
+		if got != tt.want {
+			t.Errorf("containsrange(%q) = %v; want %v", tt.r, got, tt.want)
+		}
+	}
+}
+
+func TestIPSetOverlapsRange(t *testing.T) {
+	var build IPSetBuilder
+	build.AddPrefix(mustIPPrefix("10.0.0.0/8"))
+	build.AddPrefix(mustIPPrefix("1.2.3.4/32"))
+	build.AddPrefix(mustIPPrefix("fc00::/7"))
+	s := buildIPSet(&build)
+
+	tests := []struct {
+		r    string
+		want bool
+	}{
+		{"0.0.0.0-0.0.0.0", false},
+		{"0.0.0.0-255.255.255.255", true},
+		{"::-::", false},
+
+		{"1.2.3.3-1.2.3.3", false},
+		{"1.2.3.4-1.2.3.4", true},
+		{"1.2.3.5-1.2.3.5", false},
+		{"1.2.3.3-1.2.3.5", true},
+
+		{"9.255.255.254-9.255.255.255", false},
+		{"10.0.0.0-10.0.0.0", true},
+		{"10.1.2.3-10.1.2.3", true},
+		{"10.0.0.0-10.255.255.255", true},
+		{"10.1.0.0-10.1.255.255", true},
+		{"10.1.0.0-11.1.255.255", true},
+		{"11.0.0.0-11.0.0.0", false},
+		{"9.0.0.0-11.0.0.0", true},
+
+		{"::-::", false},
+		{"fc00::-fc00::", true},
+		{"fc00::1-fc00::1", true},
+		{"fd00::1-fd00::1", true},
+		{"fc00::1-fd00::1", true},
+		{"ff00::1-ff00::1", false},
+		{"fc00::1-ff00::1", true},
+	}
+	for _, tt := range tests {
+		got := s.OverlapsRange(MustParseIPRange(tt.r))
+		if got != tt.want {
+			t.Errorf("containsrange(%q) = %v; want %v", tt.r, got, tt.want)
+		}
+	}
+}
+
 func TestIPSetFuzz(t *testing.T) {
 	t.Parallel()
 	if testing.Short() {
